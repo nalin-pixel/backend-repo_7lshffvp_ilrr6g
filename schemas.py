@@ -11,10 +11,11 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from typing import Optional, Dict, Any
+from datetime import datetime
 
-# Example schemas (replace with your own):
+# Example schemas (retain examples):
 
 class User(BaseModel):
     """
@@ -38,11 +39,24 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Portfolio-related schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class ProfileCache(BaseModel):
+    """
+    Cached GitHub aggregate data for faster responses.
+    Collection name: "profilecache"
+    """
+    username: str = Field(..., description="GitHub username")
+    data: Dict[str, Any] = Field(..., description="Aggregated profile data JSON")
+    fetched_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Message(BaseModel):
+    """
+    Contact form submissions.
+    Collection name: "message"
+    """
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    message: str = Field(..., min_length=10, max_length=5000)
+    website: Optional[HttpUrl] = None
+    meta: Optional[Dict[str, Any]] = None
